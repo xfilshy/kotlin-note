@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
  * 2.主构造函数参数必须是以属性的声明形式
  * 3.数据类不能是抽象、开放、密封或者内部的
  * 4.数据类如果需要无参构造函数，只能通过给默认值得形式实现
- * 3.编译器自动推导成员 equals()/hashCode()/toString()/copy()/componentN()
+ * 5.编译器自动推导成员 equals()/hashCode()/toString()/copy()/componentN()
  * */
 data class Person(var name: String, var age: Int) {
 
@@ -39,4 +39,5 @@ data class Person(var name: String, var age: Int) {
      * 系统生成的copy方法就是这样的 调用很爽吧
      * */
     fun copy1(name: String = this.name, age: Int = this.age) = Person(name, age)
+
 }
