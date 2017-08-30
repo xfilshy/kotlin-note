@@ -30,14 +30,39 @@ package com.xue.operator.overloading
  * a in b	b.contains(a)
  * a !in b  !b.contains(a)
  *
- * 索引运算符：
+ * 索引访问符：
  * a[i]	a.get(i)
  * a[i, j]	a.get(i, j)
  * a[i_1, ……, i_n]	a.get(i_1, ……, i_n)
+ *
+ * 索引操作符
  * a[i] = b	a.set(i, b)
  * a[i, j] = b	a.set(i, j, b)
  * a[i_1, ……, i_n] = b	a.set(i_1, ……, i_n, b)
  *
+ * 调用操作符
+ * a()	a.invoke()
+ * a(i)	a.invoke(i)
+ * a(i, j)	a.invoke(i, j)
+ * a(i_1, ……, i_n)	a.invoke(i_1, ……, i_n)
+ *
+ * 广义操作符  与对应的二元运算互斥 互斥表现是 二元运算存在的情况下 广义操作符无法调用
+ * a += b	a.plusAssign(b)
+ * a -= b	a.minusAssign(b)
+ * a *= b	a.timesAssign(b)
+ * a /= b	a.divAssign(b)
+ * a %= b	a.remAssign(b), a.modAssign(b)（已弃用）
+ *
+ *
+ * 相等与不等操作符
+ * a == b	a?.equals(b) ?: (b === null)
+ * a != b	!(a?.equals(b) ?: (b === null))
+ *
+ * 比较操作符
+ * a > b	a.compareTo(b) > 0
+ * a < b	a.compareTo(b) < 0
+ * a >= b	a.compareTo(b) >= 0
+ * a <= b	a.compareTo(b) <= 0
  * */
 fun main(args: Array<String>) {
 
@@ -90,6 +115,10 @@ fun main(args: Array<String>) {
     }
 
     println("point in point..-10 = ${point in point..10}")
+
+//    point += Point(1, 1)
+//    println("point += point = $point")
+
 }
 
 /**
@@ -186,3 +215,12 @@ operator fun Point.contains(it: Iterator<Point>): Boolean {
 
     return false
 }
+
+operator fun Point.plusAssign(point: Point) {
+    this.x += point.x
+    this.y += point.y
+}
+
+/**
+ * 中缀调用函数  模拟运算符   infix fun
+ * */
