@@ -4,7 +4,9 @@ package com.xue.builder
  * 类型安全的构建器 这实际是一种结合lambda表达式的代码写作模式  很适合用来构建  html xml json 之类的结构文本
  * */
 fun main(args: Array<String>) {
-    println("result == \n${result(arrayOf("23", "231", "321313"))}")
+//    println("result == \n${result(arrayOf("23", "231", "321313"))}")
+
+    println("test() == ${test()}")
 }
 
 
@@ -129,47 +131,126 @@ fun html(init: HTML.() -> Unit): HTML {
 }
 
 
-fun test() = jsonObject {
+/**
+ *
+ * 以下是模仿 html builder 做的一个 json builder
+ *
+ * 其实最主要的就是熟悉 高级函数 和 控制的调用特点
+ * */
 
-}
 
-open class JsonElement {
-
-}
-
-class JsonObject : JsonElement() {
-    var map = mutableMapOf<String, Any?>()
-
-    fun string(key: String, value: String) {
-
+fun test() = createJsonObject {
+    string("name") { "xueliyu" }
+    int("age") { 30 }
+    jsonObject("parent") {
+        string("father") { "xuebabab" }
+        string("mather") { "xuemama" }
     }
-
-    fun int(key: String, value: Int) {
-
-    }
-
-    fun `object`(key: String, value: JsonObject) {
-
-    }
-
-    fun array(key: String, value: JsonArray) {
-
+    jsonArray("school") {
+        string { "puanxiaoxue" }
+        string { "jiangezhongxue" }
+        string { "mianyangzhongxue" }
+        string { "heilongjiangdaxue" }
     }
 }
 
-class JsonArray {
-    var list = mutableListOf<Any?>()
+abstract class JsonElement(val name: String?) {
+
+    abstract fun render(builder: StringBuilder, indent: String)
+
 }
 
-fun jsonObject(init: () -> Unit): JsonObject {
+class JsonSimple<T>(name: String?, val value: T?) : JsonElement(name) {
+
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent")
+        if (name !== null) builder.append("$name : ")
+        builder.append("${if (value is String) "\"$value\"" else value?.toString()}")
+    }
+}
+
+open class JsonGroup(name: String?, val border: String) : JsonElement(name) {
+
+    var list = mutableListOf<JsonElement>()
+
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent")
+        if (name !== null) builder.append("$name : ")
+        builder.append("${border[0]}\n")
+        list.forEachIndexed { index, jsonElement ->
+            if (index == list.size - 1) {
+                jsonElement.render(builder, indent + "    ")
+            } else {
+                jsonElement.render(builder, indent + "    ")
+                builder.append(",\n")
+            }
+        }
+        builder.append("\n$indent${border[1]}")
+    }
+
+    override fun toString(): String {
+        val builder = StringBuilder()
+        render(builder, "")
+        return builder.toString()
+    }
+
+    fun <T> init(jsonGroup: T, init: T.() -> Unit): T {
+        jsonGroup.init()
+        return jsonGroup
+    }
+}
+
+class JsonObject(name: String?) : JsonGroup(name, "{}") {
+
+    constructor() : this(null)
+
+    fun string(key: String, value: () -> String) {
+        list.add(JsonSimple(key, value()))
+    }
+
+    fun int(key: String, value: () -> Int) {
+        list.add(JsonSimple(key, value()))
+    }
+
+    fun jsonObject(key: String, init: JsonObject.() -> Unit) {
+        list.add(init(JsonObject(key), init))
+    }
+
+    fun jsonArray(key: String, init: JsonArray.() -> Unit) {
+        list.add(init(JsonArray(key), init))
+    }
+}
+
+class JsonArray(name: String?) : JsonGroup(name, "[]") {
+
+    constructor() : this(null)
+
+    fun string(value: () -> String) {
+        list.add(JsonSimple(null, value()))
+    }
+
+    fun int(value: () -> Int) {
+        list.add(JsonSimple(null, value()))
+    }
+
+    fun jsonObject(init: JsonObject.() -> Unit) {
+        list.add(init(JsonObject(null), init))
+    }
+
+    fun jsonArray(init: JsonArray.() -> Unit) {
+        list.add(init(JsonArray(null), init))
+    }
+
+}
+
+fun createJsonObject(init: JsonObject.() -> Unit): JsonObject {
     val jsonObject = JsonObject()
+    jsonObject.init()
     return jsonObject
 }
 
-fun jsonArray(init: () -> Unit): JsonArray {
+fun createJsonArray(init: JsonArray.() -> Unit): JsonArray {
     val jsonArray = JsonArray()
+    jsonArray.init()
     return jsonArray
 }
-
-
-

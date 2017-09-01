@@ -66,11 +66,28 @@ interface OnChangeListener {
 
 open class Person(open var name: String) {
 
+    var value = 1
+
+    /**
+     * 成员变量
+     * */
+    private var ff = object {
+        fun t() = value
+    }
+
+    /**
+     * 像一个静态的对象
+     * */
     object Simple {
 
         var hhh = 2
 
         fun test01() = 1
+    }
+
+    fun te() {
+        Simple.test01()
+        ff.t()
     }
 }
 
